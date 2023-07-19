@@ -23,7 +23,4 @@ mongoose.connect("mongodb://127.0.0.1:27017/projectReact");
 
 export const viteNodeApp = app;
 
-// npm i vite vite-plugin-node -D
-// Tạo file vite.config.js ở root -> clone github của thầy
-// truy cập file app.js thêm cuối file -> export const viteNodeApp = app;
-// Truy cập file package.json, sửa lại script -> npm run dev
+
