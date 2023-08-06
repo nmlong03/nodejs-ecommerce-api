@@ -8,7 +8,6 @@ const productSchema = Joi.object({
     description: Joi.string(),
     image: Joi.string(),
     desc: Joi.string().required(),
-    quantity: Joi.number().required(),    
     categoryId: Joi.string().required(),
 });
 export const getAll = async function (req, res) {
@@ -22,6 +21,10 @@ export const getAll = async function (req, res) {
         sort: {
             [_sort]: _order == "desc" ? -1 : 1,
         },
+        populate: {
+            path: "categoryId",
+            select: "name", // Chỉ lấy trường name của đối tượng category
+          },
     };
 
     try {
@@ -29,8 +32,11 @@ export const getAll = async function (req, res) {
         if (docs.length === 0) {
             return res.status(400).json({ message: "Không có sản phẩm nào" });
         }
-        return res.status(200).json({ data: docs, totalDocs, totalPages });
-    } catch (error) {
+        const docsWithCategoryName = docs.map((doc) => ({
+            ...doc.toObject(),
+            categoryName: doc.categoryId.name, // Thêm trường categoryName với giá trị là tên danh mục
+          }));
+          return res.status(200).json({ data: docsWithCategoryName, totalDocs, totalPages });    } catch (error) {
         return res.json({
             message: error.message,
         });
@@ -96,26 +102,21 @@ export const update = async (req, res) => {
 };
 export const get = async function (req, res) {
     try {
-        const data = await Product.findOne({ _id: req.params.id }).populate({
-            path: "categoryId",
-        });
-        if (!data) {
-            return res.status(400).json({ message: "Không có sản phẩm nào" });
-        }
-        return res.json(data);
+      const data = await Product.findOne({ _id: req.params.id }).populate({
+        path: "categoryId",
+        select: "name", // Chỉ lấy trường name của đối tượng category
+      });
+      if (!data) {
+        return res.status(400).json({ message: "Không có sản phẩm nào" });
+      }
+      return res.json({
+        ...data.toObject(),
+        categoryName: data.categoryId.name, // Thêm trường categoryName với giá trị là tên danh mục
+      });
     } catch (error) {
-        return res.json({
-            message: error.message,
-        });
+      return res.json({
+        message: error.message,
+      });
     }
-};
+  };
 
-// computed property name
-
-// const myName = "sort";
-
-// const myInfo = {
-//     [myName] : "Dat"
-// }
-
-// console.log(myInfo.sort)
